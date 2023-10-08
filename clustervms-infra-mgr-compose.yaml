@@ -1,0 +1,19 @@
+version: '3.2'
+
+services:
+  infra-mgr:
+    image: alicrow/clustervms-infra-mgr:latest
+    command: --compose=/etc/clustervms/clustervms-compose.yaml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.clustervms-infra-mgr.entrypoints=web"
+      - "traefik.http.routers.clustervms-infra-mgr.rule=PathPrefix(`/v0/system`)"
+      - "traefik.http.routers.clustervms-infra-mgr.service=clustervms-infra-mgr"
+      - "traefik.http.services.clustervms-infra-mgr.loadbalancer.server.port=8000"
+    restart: always
+    user: "${UID}:${GID}"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - type: bind
+        source: /etc/clustervms
+        target: /etc/clustervms

@@ -1,0 +1,10 @@
+.dockerignore
+.git
+.gitignore
+.vscode
+/clustervms-rs/target
+/target
+docker-compose*
+Dockerfile*
+LICENSE
+README.md

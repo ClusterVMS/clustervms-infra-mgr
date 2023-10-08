@@ -1,0 +1,18 @@
+[package]
+name = "clustervms-infra-mgr"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.69"
+async-std = "1.12"
+clap = "4.1.6"
+clustervms = { git = "https://github.com/ClusterVMS/clustervms-rs" }
+duct = "0.13"
+rocket = { version = "0.5.0-rc.3", features = ["json"] }
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
+tokio = { version = "1.25", features = ["fs", "macros", "rt-multi-thread", "sync"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"

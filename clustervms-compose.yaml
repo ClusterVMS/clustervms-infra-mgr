@@ -1,0 +1,52 @@
+version: '3.2'
+
+services:
+  traefik:
+    image: traefik:v2.9
+    command:
+      - "--api.insecure=true"
+      - "--entrypoints.web.address=:80"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker=true"
+    ports:
+      - "80:80"     # ClusterVMS UI and backend
+      - "8080:8080" # Traefik UI for debugging routing
+    restart: always
+    user: "${UID}:${GID}"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+  ui:
+    image: alicrow/clustervms-ui:latest
+    labels:
+      - "traefik.enable=true"
+      # Match any request that's NOT for the API
+      - "traefik.http.routers.clustervms-ui.entrypoints=web"
+      - "traefik.http.routers.clustervms-ui.rule=!PathPrefix(`/v0/`)"
+    restart: always
+    user: "${UID}:${GID}"
+  camera-mgr:
+    image: alicrow/clustervms-camera-mgr:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.clustervms-camera-mgr.entrypoints=web"
+      - "traefik.http.routers.clustervms-camera-mgr.rule=PathPrefix(`/v0/cameras`)"
+      - "traefik.http.services.clustervms-camera-mgr.loadbalancer.server.port=8000"
+    restart: always
+    user: "${UID}:${GID}"
+    volumes:
+      - type: bind
+        source: /etc/clustervms
+        target: /etc/clustervms
+  rtsp-to-webrtc:
+    image: alicrow/rtsp-to-webrtc:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.rtsp-to-webrtc.entrypoints=web"
+      - "traefik.http.routers.rtsp-to-webrtc.rule=PathPrefix(`/v0/cameras/{id:[0-9A-Za-z_]+}/streams/{id:[0-9A-Za-z_]+}/sdp`)"
+      - "traefik.http.services.rtsp-to-webrtc.loadbalancer.server.port=8000"
+    restart: always
+    user: "${UID}:${GID}"
+    volumes:
+      - type: bind
+        source: /etc/clustervms
+        target: /etc/clustervms
